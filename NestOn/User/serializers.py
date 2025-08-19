@@ -1,7 +1,6 @@
-# User/serializers.py
-
 from rest_framework import serializers
 from django.contrib.auth import get_user_model, authenticate
+from .models import Location
 
 # AUTH_USER_MODEL 설정에 따라 현재 활성화된 User 모델을 가져옴
 User = get_user_model()
@@ -45,3 +44,42 @@ class UserLoginSerializer(serializers.Serializer):
         if user:
             return user
         raise serializers.ValidationError("아이디 또는 비밀번호가 올바르지 않습니다.")
+    
+# 1. Location 모델을 위한 Serializer 추가
+class LocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Location
+        fields = ['id', 'level1_city', 'level2_district', 'level3_borough']
+
+
+# 2. 사용자 프로필 조회 및 수정을 위한 Serializer 추가
+class UserProfileSerializer(serializers.ModelSerializer):
+    my_location = LocationSerializer(read_only=True)
+    interested_locations = LocationSerializer(many=True, read_only=True)
+
+    # 수정할 때는 ID 값만 받음 (이 부분은 변경 없음)
+    my_location_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
+    interested_location_ids = serializers.ListField(
+        child=serializers.IntegerField(), write_only=True, required=False
+    )
+
+    class Meta:
+        model = User
+        fields = [
+            'id', 'username', 'name',
+            'my_location', 'interested_locations',         # 읽기용 필드
+            'my_location_id', 'interested_location_ids'   # 쓰기용 필드
+        ]
+
+    def update(self, instance, validated_data):
+        my_location_id = validated_data.get('my_location_id')
+        if my_location_id is not None:
+            # allow_null=True를 처리하기 위해, id가 0이면 None으로 간주
+            instance.my_location_id = my_location_id if my_location_id else None
+
+        interested_location_ids = validated_data.get('interested_location_ids')
+        if interested_location_ids is not None:
+            instance.interested_locations.set(interested_location_ids)
+
+        instance.save()
+        return instance
