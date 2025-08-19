@@ -1,5 +1,3 @@
-# User/views.py
-
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -10,6 +8,10 @@ import random
 
 # from .serializers import ... 처럼 상대경로를 사용하므로 앱 이름 변경과 무관
 from .serializers import UserSignupSerializer, UserLoginSerializer
+
+from rest_framework.permissions import IsAuthenticated # 인증된 사용자만 접근 허용
+from .models import Location
+from .serializers import LocationSerializer, UserProfileSerializer
 
 User = get_user_model()
 
@@ -94,8 +96,80 @@ def login_view(request):
         }, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# 1. 시/도 목록 API
+@api_view(['GET'])
+def city_list_view(request):
+    cities = Location.objects.values_list('level1_city', flat=True).distinct()
+    return Response(list(cities))
+
+# 2. 시/군/구 목록 API
+@api_view(['GET'])
+def district_list_view(request):
+    city = request.query_params.get('city')
+    if not city:
+        return Response({"error": "city 파라미터가 필요합니다."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    districts = Location.objects.filter(level1_city=city).values_list('level2_district', flat=True).distinct()
+    return Response(list(districts))
+
+# 3. 일반구 목록 API
+@api_view(['GET'])
+def borough_list_view(request):
+    city = request.query_params.get('city')
+    district = request.query_params.get('district')
+
+    if not city or not district:
+        return Response({"error": "city와 district 파라미터가 필요합니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+    boroughs = Location.objects.filter(
+        level1_city=city, 
+        level2_district=district
+    ).exclude(level3_borough__isnull=True).values_list('level3_borough', flat=True).distinct()
+    
+    return Response(list(boroughs))
+    
+# 4. 전체 Location 객체를 반환하는 API (ID 선택을 위해)
+@api_view(['GET'])
+def location_search_view(request):
+    """
+    프론트엔드에서 최종 선택된 지역의 ID를 찾기 위한 API.
+    예: /api/user/locations/search/?city=경기도&district=성남시&borough=분당구
+    """
+    city = request.query_params.get('city')
+    district = request.query_params.get('district')
+    borough = request.query_params.get('borough', None)
+
+    if not city or not district:
+        return Response({"error": "city와 district가 필요합니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        if borough:
+            location = Location.objects.get(level1_city=city, level2_district=district, level3_borough=borough)
+        else:
+            location = Location.objects.get(level1_city=city, level2_district=district, level3_borough__isnull=True)
+        
+        serializer = LocationSerializer(location)
+        return Response(serializer.data)
+    except Location.DoesNotExist:
+        return Response({"error": "해당 지역을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
 
 
+# 5. 사용자 프로필 조회 및 수정 API
+@api_view(['GET', 'PATCH'])
+@permission_classes([IsAuthenticated])
+def profile_view(request):
+    user = request.user
+
+    if request.method == 'GET':
+        serializer = UserProfileSerializer(user)
+        return Response(serializer.data)
+
+    elif request.method == 'PATCH':
+        serializer = UserProfileSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 """
 rom rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
