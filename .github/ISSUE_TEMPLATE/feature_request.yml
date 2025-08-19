@@ -2,7 +2,7 @@ name: '✨ Feature Request'
 description: '새로운 기능을 제안합니다.'
 title: "[FEAT] <기능 요약>"
 labels: enhancement
-assignees: ''
+assignees: []
 body:
   - type: textarea
     id: feature-description
