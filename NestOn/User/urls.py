@@ -8,6 +8,7 @@ from .views import (
     borough_list_view,
     location_search_view,
     profile_view,
+    category_list_view,
 )
 
 urlpatterns = [
@@ -22,4 +23,5 @@ urlpatterns = [
     path('locations/boroughs/', borough_list_view, name='borough-list'),
     path('locations/search/', location_search_view, name='location-search'),
     path('profile/', profile_view, name='profile'),
+    path('categories/', category_list_view, name='category-list'),
 ]

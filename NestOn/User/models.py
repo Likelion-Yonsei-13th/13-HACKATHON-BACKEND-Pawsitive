@@ -18,6 +18,21 @@ class Location(models.Model):
         unique_together = ('level1_city', 'level2_district', 'level3_borough')
 
 
+# 상위 카테고리 (예: 문화.예술, 스포츠.레저)
+class Category(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+
+# 하위 카테고리 (예: 지역공연, 마라톤.사이클 대회)
+class SubCategory(models.Model):
+    parent_category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='subcategories')
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.parent_category.name} - {self.name}"
+
 class CustomUser(AbstractUser):
     # 회원가입 폼에 필요한 필드
     name = models.CharField(max_length=100)
@@ -35,5 +50,9 @@ class CustomUser(AbstractUser):
     
     # '관심 지역' (여러 개 선택 가능)
     interested_locations = models.ManyToManyField(Location, blank=True, related_name='interested_users')
+
+    # 2. interests 필드를 SubCategory와 연결하도록 수정합니다.
+    #    (기존에 Interest 모델과 연결했다면, 이제 SubCategory와 연결합니다)
+    interests = models.ManyToManyField(SubCategory, blank=True, related_name='users')
     def __str__(self):
         return self.username

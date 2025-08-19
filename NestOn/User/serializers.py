@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model, authenticate
-from .models import Location
+from .models import Location, Category, SubCategory
 
 # AUTH_USER_MODEL 설정에 따라 현재 활성화된 User 모델을 가져옴
 User = get_user_model()
@@ -34,6 +34,22 @@ class UserSignupSerializer(serializers.ModelSerializer):
         validated_data.pop('password2')
         user = User.objects.create_user(**validated_data)
         return user
+    
+class SubCategorySerializer(serializers.ModelSerializer):
+    # 부모 카테고리의 이름을 함께 보내기 위한 필드 추가
+    parent_category_name = serializers.CharField(source='parent_category.name', read_only=True)
+
+    class Meta:
+        model = SubCategory
+        fields = ['id', 'name', 'parent_category_name'] # 필드 목록에 추가
+
+class CategorySerializer(serializers.ModelSerializer):
+    # 하위 카테고리 목록을 중첩해서 보여줌
+    subcategories = SubCategorySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'subcategories']
 
 class UserLoginSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
@@ -56,10 +72,15 @@ class LocationSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     my_location = LocationSerializer(read_only=True)
     interested_locations = LocationSerializer(many=True, read_only=True)
-
-    # 수정할 때는 ID 값만 받음 (이 부분은 변경 없음)
+    interests = SubCategorySerializer(many=True, read_only=True) # 이제 SubCategory를 보여줌
+    
+    # 수정할 때는 ID 값만 받음 
     my_location_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
     interested_location_ids = serializers.ListField(
+        child=serializers.IntegerField(), write_only=True, required=False
+    )
+    # 사용자가 선택한 하위 카테고리 ID 목록을 받기 위한 필드
+    interest_ids = serializers.ListField(
         child=serializers.IntegerField(), write_only=True, required=False
     )
 
@@ -80,6 +101,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
         interested_location_ids = validated_data.get('interested_location_ids')
         if interested_location_ids is not None:
             instance.interested_locations.set(interested_location_ids)
+
+        # 관심사(하위 카테고리) 수정 로직 추가
+        interest_ids = validated_data.get('interest_ids')
+        if interest_ids is not None:
+            instance.interests.set(interest_ids)
 
         instance.save()
         return instance
