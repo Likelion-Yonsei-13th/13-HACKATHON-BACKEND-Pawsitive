@@ -1,15 +1,27 @@
-ame: '✨ Feature Request'
-about: 새로운 기능을 제안하세요.
+name: '✨ Feature Request'
+about: '새로운 기능을 제안합니다.'
 title: "[FEAT] <기능 요약>"
 labels: enhancement
 assignees: ''
 body:
-  - type: markdown
+  - type: textarea
+    id: feature-description
     attributes:
+      label: "📢 기능 설명"
+      description: "어떤 기능이 필요한지 설명해주세요."
+    validations:
+      required: true
+      
+  - type: textarea
+    id: task-list
+    attributes:
+      label: "🚀 작업 목록"
+      description: "이 기능이 추가되면 어떤 점이 좋나요?"
       value: |
-        ## ## 📢 기능 설명
-        ## ## 🚀 작업 목록
-        -
+        - 
         
-        ## ## 🔗 참고 자료
-        ```
+  - type: textarea
+    id: reference
+    attributes:
+      label: "🔗 참고 자료"
+      description: "참고한 자료가 있나요?"
