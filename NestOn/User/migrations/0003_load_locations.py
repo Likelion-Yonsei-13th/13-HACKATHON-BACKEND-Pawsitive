@@ -1,9 +1,10 @@
+# User/migrations/0002_load_locations.py
 
 import csv
 from django.db import migrations
 from django.conf import settings
 
-# CSV 파일 경로
+# 1단계에서 저장한 CSV 파일 경로
 CSV_PATH = settings.BASE_DIR / 'data' / 'korea_locations_3level.csv'
 
 def load_data(apps, schema_editor):
