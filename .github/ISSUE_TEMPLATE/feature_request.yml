@@ -1,0 +1,15 @@
+ame: '✨ Feature Request'
+about: 새로운 기능을 제안하세요.
+title: "[FEAT] <기능 요약>"
+labels: enhancement
+assignees: ''
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ## 📢 기능 설명
+        ## ## 🚀 작업 목록
+        -
+        
+        ## ## 🔗 참고 자료
+        ```
