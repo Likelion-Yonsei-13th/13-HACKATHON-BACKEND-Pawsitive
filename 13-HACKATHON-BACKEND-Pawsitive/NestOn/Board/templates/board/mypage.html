@@ -1,0 +1,49 @@
+{% extends 'board/base.html' %}
+
+{% block title %}마이페이지 - NestOn{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">마이페이지</h1>
+        <p class="page-subtitle">개인정보와 설정을 관리하세요</p>
+    </div>
+    
+    <div class="page-content">
+        <!-- 사용자 정보 -->
+        <div class="user-info">
+            <div class="user-greeting">김멋사 님, 안녕하세요!</div>
+            <div class="user-details">
+                <div>📧 이메일: kim@example.com</div>
+                <div>📱 전화번호: 010-1234-5678</div>
+                <div>📍 거주지역: 서울특별시 서대문구</div>
+                <div>📅 가입일: 2024년 1월 15일</div>
+            </div>
+        </div>
+        
+        <!-- 메뉴 목록 -->
+        <ul class="menu-list">
+            <li class="menu-list-item" onclick="navigateTo('/board/mypage/profile/')">
+                <div class="menu-bullet"></div>
+                <div class="menu-text">개인정보 관리</div>
+                <div class="menu-arrow">></div>
+            </li>
+            <li class="menu-list-item" onclick="navigateTo('/board/mypage/notifications/')">
+                <div class="menu-bullet"></div>
+                <div class="menu-text">알림 설정</div>
+                <div class="menu-arrow">></div>
+            </li>
+            <li class="menu-list-item" onclick="navigateTo('/board/mypage/customer-center/')">
+                <div class="menu-bullet"></div>
+                <div class="menu-text">고객센터/운영정책</div>
+                <div class="menu-arrow">></div>
+            </li>
+            <li class="menu-list-item" onclick="navigateTo('/board/mypage/withdrawal/')">
+                <div class="menu-bullet"></div>
+                <div class="menu-text">탈퇴하기</div>
+                <div class="menu-arrow">></div>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

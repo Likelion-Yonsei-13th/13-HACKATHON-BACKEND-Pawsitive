@@ -1,0 +1,366 @@
+{% extends 'board/base.html' %}
+
+{% block title %}{{ page_title }} - NestOn{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">🏠 {{ page_title }}</h1>
+        <p class="page-subtitle">{{ page_subtitle }}</p>
+    </div>
+    
+    <div class="page-content">
+        <div class="region-form-container">
+            <div class="current-region">
+                <h3>현재 거주지역</h3>
+                <div class="region-display">
+                    <span class="region-icon">🏠</span>
+                    <span class="region-text">서울특별시 서대문구</span>
+                </div>
+            </div>
+            
+            <div class="region-form">
+                <h3>거주지역 변경</h3>
+                <form id="residenceForm">
+                    <div class="form-group">
+                        <label for="province">시/도</label>
+                        <select id="province" name="province" class="form-select" required>
+                            <option value="">시/도를 선택하세요</option>
+                            <option value="서울특별시" selected>서울특별시</option>
+                            <option value="부산광역시">부산광역시</option>
+                            <option value="대구광역시">대구광역시</option>
+                            <option value="인천광역시">인천광역시</option>
+                            <option value="광주광역시">광주광역시</option>
+                            <option value="대전광역시">대전광역시</option>
+                            <option value="울산광역시">울산광역시</option>
+                            <option value="세종특별자치시">세종특별자치시</option>
+                            <option value="경기도">경기도</option>
+                            <option value="강원도">강원도</option>
+                            <option value="충청북도">충청북도</option>
+                            <option value="충청남도">충청남도</option>
+                            <option value="전라북도">전라북도</option>
+                            <option value="전라남도">전라남도</option>
+                            <option value="경상북도">경상북도</option>
+                            <option value="경상남도">경상남도</option>
+                            <option value="제주특별자치도">제주특별자치도</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="city">시/군/구</label>
+                        <select id="city" name="city" class="form-select" required>
+                            <option value="">시/군/구를 선택하세요</option>
+                            <option value="서대문구" selected>서대문구</option>
+                            <option value="강남구">강남구</option>
+                            <option value="강동구">강동구</option>
+                            <option value="강북구">강북구</option>
+                            <option value="강서구">강서구</option>
+                            <option value="관악구">관악구</option>
+                            <option value="광진구">광진구</option>
+                            <option value="구로구">구로구</option>
+                            <option value="금천구">금천구</option>
+                            <option value="노원구">노원구</option>
+                            <option value="도봉구">도봉구</option>
+                            <option value="동대문구">동대문구</option>
+                            <option value="동작구">동작구</option>
+                            <option value="마포구">마포구</option>
+                            <option value="서초구">서초구</option>
+                            <option value="성동구">성동구</option>
+                            <option value="성북구">성북구</option>
+                            <option value="송파구">송파구</option>
+                            <option value="양천구">양천구</option>
+                            <option value="영등포구">영등포구</option>
+                            <option value="용산구">용산구</option>
+                            <option value="은평구">은평구</option>
+                            <option value="종로구">종로구</option>
+                            <option value="중구">중구</option>
+                            <option value="중랑구">중랑구</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="district">동/읍/면</label>
+                        <select id="district" name="district" class="form-select">
+                            <option value="">동/읍/면을 선택하세요 (선택사항)</option>
+                            <option value="신촌동">신촌동</option>
+                            <option value="연희동">연희동</option>
+                            <option value="홍제동">홍제동</option>
+                            <option value="북아현동">북아현동</option>
+                            <option value="천연동">천연동</option>
+                            <option value="충정로동">충정로동</option>
+                            <option value="합동">합동</option>
+                            <option value="미근동">미근동</option>
+                            <option value="냉천동">냉천동</option>
+                            <option value="옥천동">옥천동</option>
+                            <option value="영천동">영천동</option>
+                            <option value="현저동">현저동</option>
+                            <option value="북가좌동">북가좌동</option>
+                            <option value="남가좌동">남가좌동</option>
+                            <option value="창천동">창천동</option>
+                            <option value="대신동">대신동</option>
+                            <option value="대현동">대현동</option>
+                            <option value="신수동">신수동</option>
+                            <option value="봉원동">봉원동</option>
+                            <option value="창평동">창평동</option>
+                            <option value="교남동">교남동</option>
+                            <option value="교북동">교북동</option>
+                            <option value="인사동">인사동</option>
+                            <option value="사직동">사직동</option>
+                            <option value="체부동">체부동</option>
+                            <option value="필운동">필운동</option>
+                            <option value="내자동">내자동</option>
+                            <option value="사간동">사간동</option>
+                            <option value="송현동">송현동</option>
+                            <option value="가회동">가회동</option>
+                            <option value="재동">재동</option>
+                            <option value="계동">계동</option>
+                            <option value="원서동">원서동</option>
+                            <option value="훈정동">훈정동</option>
+                            <option value="묘동">묘동</option>
+                            <option value="봉익동">봉익동</option>
+                            <option value="돈의동">돈의동</option>
+                            <option value="장사동">장사동</option>
+                            <option value="관수동">관수동</option>
+                            <option value="인의동">인의동</option>
+                            <option value="예지동">예지동</option>
+                            <option value="원남동">원남동</option>
+                            <option value="연지동">연지동</option>
+                            <option value="종로동">종로동</option>
+                            <option value="효자동">효자동</option>
+                            <option value="봉원동">봉원동</option>
+                            <option value="통의동">통의동</option>
+                            <option value="적선동">적선동</option>
+                            <option value="통인동">통인동</option>
+                            <option value="누상동">누상동</option>
+                            <option value="누하동">누하동</option>
+                            <option value="옥인동">옥인동</option>
+                            <option value="체부동">체부동</option>
+                            <option value="필운동">필운동</option>
+                            <option value="내자동">내자동</option>
+                            <option value="사간동">사간동</option>
+                            <option value="송현동">송현동</option>
+                            <option value="가회동">가회동</option>
+                            <option value="재동">재동</option>
+                            <option value="계동">계동</option>
+                            <option value="원서동">원서동</option>
+                            <option value="훈정동">훈정동</option>
+                            <option value="묘동">묘동</option>
+                            <option value="봉익동">봉익동</option>
+                            <option value="돈의동">돈의동</option>
+                            <option value="장사동">장사동</option>
+                            <option value="관수동">관수동</option>
+                            <option value="인의동">인의동</option>
+                            <option value="예지동">예지동</option>
+                            <option value="원남동">원남동</option>
+                            <option value="연지동">연지동</option>
+                            <option value="종로동">종로동</option>
+                            <option value="효자동">효자동</option>
+                            <option value="봉원동">봉원동</option>
+                            <option value="통의동">통의동</option>
+                            <option value="적선동">적선동</option>
+                            <option value="통인동">통인동</option>
+                            <option value="누상동">누상동</option>
+                            <option value="누하동">누하동</option>
+                            <option value="옥인동">옥인동</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="goBack()">취소</button>
+                        <button type="submit" class="btn-primary">거주지역 변경</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .region-form-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .current-region {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .current-region h3 {
+        margin-bottom: 15px;
+        color: #2c3e50;
+        font-size: 1.2em;
+    }
+    
+    .region-display {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        border-left: 4px solid #4facfe;
+    }
+    
+    .region-icon {
+        font-size: 1.5em;
+    }
+    
+    .region-text {
+        font-size: 1.1em;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .region-form {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .region-form h3 {
+        margin-bottom: 25px;
+        color: #2c3e50;
+        font-size: 1.2em;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .form-select {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e1e5e9;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.3s ease;
+        box-sizing: border-box;
+        background: white;
+    }
+    
+    .form-select:focus {
+        outline: none;
+        border-color: #4facfe;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: flex-end;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e1e5e9;
+    }
+    
+    .btn-primary, .btn-secondary {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 14px;
+    }
+    
+    .btn-primary {
+        background: #4facfe;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #3a8bfd;
+        transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+        background: #95a5a6;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background: #7f8c8d;
+        transform: translateY(-2px);
+    }
+    
+    .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-weight: 600;
+    }
+    
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .alert-error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+</style>
+
+<script>
+    // 폼 제출
+    document.getElementById('residenceForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        
+        submitBtn.textContent = '변경 중...';
+        submitBtn.disabled = true;
+        
+        try {
+            // 실제 API 호출 대신 시뮬레이션
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            showAlert('거주지역이 성공적으로 변경되었습니다!', 'success');
+            
+            setTimeout(() => {
+                window.location.href = '/board/myregion/';
+            }, 2000);
+            
+        } catch (error) {
+            showAlert('거주지역 변경에 실패했습니다.', 'error');
+        } finally {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+    
+    // 알림 표시
+    function showAlert(message, type) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type}`;
+        alertDiv.textContent = message;
+        
+        const form = document.querySelector('.region-form');
+        form.insertBefore(alertDiv, form.firstChild);
+        
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
+    }
+    
+    // 뒤로 가기
+    function goBack() {
+        window.history.back();
+    }
+</script>
+{% endblock %}

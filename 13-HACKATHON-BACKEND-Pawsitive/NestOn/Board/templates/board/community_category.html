@@ -1,0 +1,405 @@
+{% extends 'board/base.html' %}
+
+{% block title %}{{ category_display }} - 제보 데이터 소식{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">📢 제보 데이터 > {{ category_display }}</h1>
+        <p class="page-subtitle">{{ category_display }} 관련 제보를 확인하세요</p>
+    </div>
+    
+    <div class="page-content">
+        <div class="board-controls">
+            <div class="search-box">
+                <input type="text" class="search-input" placeholder="제보 검색..." id="searchInput">
+                <button class="search-btn" onclick="searchPosts()">검색</button>
+            </div>
+            <button class="report-btn" onclick="showReportForm()">지금 이 카테고리 소식 제보하기</button>
+        </div>
+        
+        <div class="posts-container" id="postsContainer">
+            <div class="loading">
+                <h3>제보를 불러오는 중...</h3>
+            </div>
+        </div>
+        
+        <div class="pagination" id="pagination"></div>
+    </div>
+</div>
+
+<style>
+    .board-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .search-box {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .search-input {
+        padding: 10px 15px;
+        border: 2px solid #e1e5e9;
+        border-radius: 25px;
+        font-size: 14px;
+        width: 300px;
+        transition: border-color 0.3s ease;
+    }
+    
+    .search-input:focus {
+        outline: none;
+        border-color: #4facfe;
+    }
+    
+    .search-btn {
+        padding: 10px 20px;
+        background: #4facfe;
+        color: white;
+        border: none;
+        border-radius: 25px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .search-btn:hover {
+        background: #3a8bfd;
+        transform: translateY(-2px);
+    }
+    
+    .report-btn {
+        padding: 12px 24px;
+        background: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 25px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .report-btn:hover {
+        background: #c0392b;
+        transform: translateY(-2px);
+    }
+    
+    .posts-container {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    
+    .post-item {
+        padding: 20px;
+        border-bottom: 1px solid #e1e5e9;
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .post-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .post-item:last-child {
+        border-bottom: none;
+    }
+    
+    .post-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+    }
+    
+    .post-title {
+        font-size: 1.2em;
+        font-weight: 600;
+        color: #2c3e50;
+        flex: 1;
+        margin-right: 15px;
+    }
+    
+    .post-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 5px;
+        font-size: 0.9em;
+        color: #7f8c8d;
+    }
+    
+    .post-author {
+        font-weight: 600;
+    }
+    
+    .post-time {
+        font-size: 0.8em;
+    }
+    
+    .post-content {
+        color: #555;
+        line-height: 1.6;
+        margin-bottom: 15px;
+    }
+    
+    .post-image {
+        width: 100%;
+        max-width: 300px;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+    
+    .post-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .post-stats {
+        display: flex;
+        gap: 15px;
+        font-size: 0.9em;
+        color: #7f8c8d;
+    }
+    
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .post-badges {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .post-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.8em;
+        font-weight: 600;
+    }
+    
+    .badge-urgent {
+        background: #e74c3c;
+        color: white;
+    }
+    
+    .badge-verified {
+        background: #27ae60;
+        color: white;
+    }
+    
+    .badge-anonymous {
+        background: #95a5a6;
+        color: white;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #7f8c8d;
+    }
+    
+    .empty-state h3 {
+        font-size: 1.5em;
+        margin-bottom: 10px;
+    }
+    
+    .loading {
+        text-align: center;
+        padding: 40px;
+        color: #7f8c8d;
+    }
+    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 30px;
+    }
+    
+    .page-btn {
+        padding: 8px 12px;
+        border: 1px solid #e1e5e9;
+        background: white;
+        color: #4facfe;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .page-btn:hover {
+        background: #4facfe;
+        color: white;
+    }
+    
+    .page-btn.active {
+        background: #4facfe;
+        color: white;
+    }
+</style>
+
+<script>
+    let currentPage = 1;
+    let totalPages = 1;
+    const category = '{{ category }}';
+    
+    // 페이지 로드 시 제보 불러오기
+    document.addEventListener('DOMContentLoaded', function() {
+        loadPosts();
+    });
+    
+    // 제보 목록 불러오기
+    async function loadPosts(page = 1) {
+        const container = document.getElementById('postsContainer');
+        container.innerHTML = '<div class="loading"><h3>제보를 불러오는 중...</h3></div>';
+        
+        try {
+            const response = await fetch(`/api/board/community/posts/?category=${category}&page=${page}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                displayPosts(data.data);
+                setupPagination(data.data.count || 0, page);
+            } else {
+                container.innerHTML = '<div class="empty-state"><h3>제보를 불러올 수 없습니다</h3><p>잠시 후 다시 시도해주세요.</p></div>';
+            }
+        } catch (error) {
+            container.innerHTML = '<div class="empty-state"><h3>오류가 발생했습니다</h3><p>네트워크 연결을 확인해주세요.</p></div>';
+        }
+    }
+    
+    // 제보 표시
+    function displayPosts(posts) {
+        const container = document.getElementById('postsContainer');
+        
+        if (!posts || posts.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>아직 제보가 없습니다</h3>
+                    <p>첫 번째 제보를 작성해보세요!</p>
+                </div>
+            `;
+            return;
+        }
+        
+        const postsHTML = posts.map(post => {
+            const badges = [];
+            if (post.is_urgent) badges.push('<span class="post-badge badge-urgent">긴급</span>');
+            if (post.is_verified) badges.push('<span class="post-badge badge-verified">검증완료</span>');
+            if (post.is_anonymous) badges.push('<span class="post-badge badge-anonymous">익명</span>');
+            
+            return `
+                <div class="post-item" onclick="viewPost(${post.id})">
+                    <div class="post-header">
+                        <div class="post-title">${post.title}</div>
+                        <div class="post-meta">
+                            <div class="post-author">${post.author_display_name}</div>
+                            <div class="post-time">${formatDate(post.created_at)}</div>
+                        </div>
+                    </div>
+                    ${post.image ? `<img src="${post.image}" alt="제보 이미지" class="post-image">` : ''}
+                    <div class="post-content">${post.content.substring(0, 200)}${post.content.length > 200 ? '...' : ''}</div>
+                    <div class="post-footer">
+                        <div class="post-stats">
+                            <div class="stat-item">👍 ${post.like_count || 0}</div>
+                            <div class="stat-item">💬 ${post.comment_count || 0}</div>
+                            <div class="stat-item">👁️ ${post.view_count || 0}</div>
+                        </div>
+                        <div class="post-badges">
+                            ${badges.join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        container.innerHTML = postsHTML;
+    }
+    
+    // 페이지네이션 설정
+    function setupPagination(totalCount, currentPage) {
+        const itemsPerPage = 10;
+        totalPages = Math.ceil(totalCount / itemsPerPage);
+        currentPage = currentPage;
+        
+        const pagination = document.getElementById('pagination');
+        
+        if (totalPages <= 1) {
+            pagination.innerHTML = '';
+            return;
+        }
+        
+        let paginationHTML = '';
+        
+        // 이전 페이지 버튼
+        if (currentPage > 1) {
+            paginationHTML += `<button class="page-btn" onclick="loadPosts(${currentPage - 1})">이전</button>`;
+        }
+        
+        // 페이지 번호들
+        for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+            paginationHTML += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="loadPosts(${i})">${i}</button>`;
+        }
+        
+        // 다음 페이지 버튼
+        if (currentPage < totalPages) {
+            paginationHTML += `<button class="page-btn" onclick="loadPosts(${currentPage + 1})">다음</button>`;
+        }
+        
+        pagination.innerHTML = paginationHTML;
+    }
+    
+    // 제보 검색
+    function searchPosts() {
+        const searchTerm = document.getElementById('searchInput').value;
+        // 검색 기능 구현 (필요시)
+        loadPosts(1);
+    }
+    
+    // 제보 작성 폼 표시
+    function showReportForm() {
+        window.location.href = `/board/report-data/create/?category=${category}`;
+    }
+    
+    // 제보 상세보기
+    function viewPost(postId) {
+        window.location.href = `/board/community/${postId}/`;
+    }
+    
+    // 날짜 포맷팅
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diff = now - date;
+        
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+        
+        if (minutes < 60) {
+            return `${minutes}분 전`;
+        } else if (hours < 24) {
+            return `${hours}시간 전`;
+        } else if (days < 7) {
+            return `${days}일 전`;
+        } else {
+            return date.toLocaleDateString('ko-KR');
+        }
+    }
+</script>
+{% endblock %}
