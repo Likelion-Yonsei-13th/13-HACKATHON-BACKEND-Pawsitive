@@ -1,0 +1,386 @@
+{% extends 'board/base.html' %}
+
+{% block title %}알림 설정 - NestOn{% endblock %}
+
+{% block content %}
+<style>
+    .notifications-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .notifications-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .notifications-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .notifications-subtitle {
+        font-size: 16px;
+        opacity: 0.9;
+    }
+
+    .notifications-content {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .notification-section {
+        margin-bottom: 30px;
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .notification-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .notification-item:last-child {
+        border-bottom: none;
+    }
+
+    .notification-info {
+        flex: 1;
+    }
+
+    .notification-title {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 4px;
+    }
+
+    .notification-description {
+        font-size: 14px;
+        color: #666;
+    }
+
+    /* 토글 스위치 스타일 */
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 24px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    input:checked + .slider {
+        background-color: #667eea;
+    }
+
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+
+    .notification-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: flex-end;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: none;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #545b62;
+    }
+
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #5a6fd8;
+    }
+
+    .notification-preview {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 10px;
+        font-size: 14px;
+        color: #666;
+        border-left: 4px solid #667eea;
+    }
+
+    @media (max-width: 768px) {
+        .notifications-container {
+            padding: 15px;
+        }
+        
+        .notifications-content {
+            padding: 20px;
+        }
+        
+        .notification-actions {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="notifications-container">
+    <div class="notifications-header">
+        <h1 class="notifications-title">알림 설정</h1>
+        <p class="notifications-subtitle">원하는 알림을 선택하여 받아보세요</p>
+    </div>
+
+    <div class="notifications-content">
+        <!-- 공공 데이터 소식 알림 -->
+        <div class="notification-section">
+            <h3 class="section-title">📢 공공 데이터 소식</h3>
+            
+            <div class="notification-item">
+                <div class="notification-info">
+                    <div class="notification-title">긴급 알림</div>
+                    <div class="notification-description">자연재해, 사고, 교통 등 긴급 상황 알림</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="urgentAlerts" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="notification-item">
+                <div class="notification-info">
+                    <div class="notification-title">일반 공지사항</div>
+                    <div class="notification-description">시설 점검, 행사 안내 등 일반 공지</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="generalNotices" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="notification-item">
+                <div class="notification-info">
+                    <div class="notification-title">카테고리별 알림</div>
+                    <div class="notification-description">선택한 카테고리의 공공 데이터만 받기</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="categoryAlerts">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- 제보 데이터 소식 알림 -->
+        <div class="notification-section">
+            <h3 class="section-title">📝 제보 데이터 소식</h3>
+            
+            <div class="notification-item">
+                <div class="notification-info">
+                    <div class="notification-title">내 지역 제보</div>
+                    <div class="notification-description">내 거주 지역의 새로운 제보 알림</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="localReports" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="notification-item">
+                <div class="notification-info">
+                    <div class="notification-title">긴급 제보</div>
+                    <div class="notification-description">긴급으로 표시된 제보 알림</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="urgentReports" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="notification-item">
+                <div class="notification-info">
+                    <div class="notification-title">댓글 알림</div>
+                    <div class="notification-description">내 제보에 달린 댓글 알림</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="commentNotifications">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- 지역행사 알림 -->
+        <div class="notification-section">
+            <h3 class="section-title">🎉 지역행사</h3>
+            
+            <div class="notification-item">
+                <div class="notification-info">
+                    <div class="notification-title">새로운 행사</div>
+                    <div class="notification-description">내 지역의 새로운 행사 등록 알림</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="newEvents" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="notification-item">
+                <div class="notification-info">
+                    <div class="notification-title">행사 리마인더</div>
+                    <div class="notification-description">관심 행사 시작 전 알림</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="eventReminders">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="notification-item">
+                <div class="notification-info">
+                    <div class="notification-title">무료 행사</div>
+                    <div class="notification-description">무료 행사 알림</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="freeEvents">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- 시스템 알림 -->
+        <div class="notification-section">
+            <h3 class="section-title">⚙️ 시스템</h3>
+            
+            <div class="notification-item">
+                <div class="notification-info">
+                    <div class="notification-title">앱 업데이트</div>
+                    <div class="notification-description">새로운 버전 업데이트 알림</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="appUpdates">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="notification-item">
+                <div class="notification-info">
+                    <div class="notification-title">서비스 공지</div>
+                    <div class="notification-description">서비스 점검, 정책 변경 등 공지</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="serviceNotices" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- 알림 미리보기 -->
+        <div class="notification-preview">
+            <strong>알림 미리보기:</strong><br>
+            "서대문구 연희동 도로공사 안내" - 연희로 2km 구간에서 도로공사가 진행됩니다. (8/21~8/25) 교통에 유의하시기 바랍니다.
+        </div>
+
+        <div class="notification-actions">
+            <button type="button" class="btn btn-secondary" onclick="goBack()">취소</button>
+            <button type="button" class="btn btn-primary" onclick="saveSettings()">저장하기</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 설정 저장
+    function saveSettings() {
+        const settings = {
+            urgentAlerts: document.getElementById('urgentAlerts').checked,
+            generalNotices: document.getElementById('generalNotices').checked,
+            categoryAlerts: document.getElementById('categoryAlerts').checked,
+            localReports: document.getElementById('localReports').checked,
+            urgentReports: document.getElementById('urgentReports').checked,
+            commentNotifications: document.getElementById('commentNotifications').checked,
+            newEvents: document.getElementById('newEvents').checked,
+            eventReminders: document.getElementById('eventReminders').checked,
+            freeEvents: document.getElementById('freeEvents').checked,
+            appUpdates: document.getElementById('appUpdates').checked,
+            serviceNotices: document.getElementById('serviceNotices').checked
+        };
+
+        // API 호출 (실제 구현 시)
+        console.log('알림 설정:', settings);
+        alert('알림 설정이 저장되었습니다.');
+        window.location.href = '/board/mypage/';
+    }
+
+    // 뒤로가기
+    function goBack() {
+        window.history.back();
+    }
+
+    // 페이지 로드 시 기존 설정 불러오기
+    document.addEventListener('DOMContentLoaded', function() {
+        // 실제 구현 시 서버에서 사용자 설정을 불러와서 체크박스 상태 설정
+        console.log('알림 설정 페이지 로드됨');
+    });
+</script>
+{% endblock %}

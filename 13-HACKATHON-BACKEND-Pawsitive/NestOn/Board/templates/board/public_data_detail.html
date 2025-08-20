@@ -1,0 +1,427 @@
+{% extends 'board/base.html' %}
+
+{% block title %}{{ alert.title }} - 공공 데이터 소식{% endblock %}
+
+{% block content %}
+<style>
+    .alert-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .alert-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+
+    .alert-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 15px;
+        line-height: 1.4;
+    }
+
+    .alert-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .alert-sender {
+        font-size: 16px;
+        opacity: 0.9;
+    }
+
+    .alert-time {
+        font-size: 14px;
+        opacity: 0.8;
+    }
+
+    .alert-content {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+
+    .alert-info {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e9ecef;
+        flex-wrap: wrap;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .info-value {
+        color: #666;
+    }
+
+    .priority-badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .priority-high {
+        background: #dc3545;
+        color: white;
+    }
+
+    .priority-medium {
+        background: #ffc107;
+        color: #333;
+    }
+
+    .priority-low {
+        background: #28a745;
+        color: white;
+    }
+
+    .alert-body {
+        line-height: 1.8;
+        color: #333;
+        font-size: 16px;
+    }
+
+    .alert-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .action-btn {
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #5a6fd8;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #545b62;
+    }
+
+    .btn-outline {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+
+    .btn-outline:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .related-alerts {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .related-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .related-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .related-item {
+        padding: 15px;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .related-item:hover {
+        background: #f8f9fa;
+        border-color: #667eea;
+    }
+
+    .related-item-title {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 5px;
+    }
+
+    .related-item-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        color: #666;
+    }
+
+    .no-related {
+        text-align: center;
+        padding: 40px 20px;
+        color: #666;
+    }
+
+    @media (max-width: 768px) {
+        .alert-container {
+            padding: 15px;
+        }
+        
+        .alert-content, .related-alerts {
+            padding: 20px;
+        }
+        
+        .alert-meta {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .alert-info {
+            flex-direction: column;
+        }
+        
+        .alert-actions {
+            flex-direction: column;
+        }
+        
+        .action-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="alert-container">
+    <div class="alert-header">
+        <h1 class="alert-title">{{ alert.title }}</h1>
+        <div class="alert-meta">
+            <div class="alert-sender">{{ alert.sender }}</div>
+            <div class="alert-time">{{ alert.sent_at|date:"Y년 m월 d일 A g시 i분" }}</div>
+        </div>
+    </div>
+
+    <div class="alert-content">
+        <!-- 알림 정보 -->
+        <div class="alert-info">
+            <div class="info-item">
+                <span class="info-label">카테고리:</span>
+                <span class="info-value">{{ alert.get_category_display }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">알림 유형:</span>
+                <span class="info-value">{{ alert.get_alert_type_display }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">우선순위:</span>
+                <span class="priority-badge priority-{{ alert.priority }}">
+                    {% if alert.priority == 'high' %}높음
+                    {% elif alert.priority == 'medium' %}보통
+                    {% else %}낮음{% endif %}
+                </span>
+            </div>
+            {% if alert.is_broadcast %}
+            <div class="info-item">
+                <span class="priority-badge priority-high">긴급</span>
+            </div>
+            {% endif %}
+            {% if alert.location %}
+            <div class="info-item">
+                <span class="info-label">지역:</span>
+                <span class="info-value">{{ alert.location.level2_district }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 알림 내용 -->
+        <div class="alert-body">
+            {{ alert.content|linebreaks }}
+        </div>
+
+        <!-- 액션 버튼 -->
+        <div class="alert-actions">
+            <button class="action-btn btn-outline" onclick="shareAlert()">
+                📤 공유하기
+            </button>
+            <button class="action-btn btn-secondary" onclick="goBack()">
+                ← 목록으로
+            </button>
+            <button class="action-btn btn-primary" onclick="subscribeCategory()">
+                🔔 카테고리 구독
+            </button>
+        </div>
+    </div>
+
+    <!-- 관련 알림 -->
+    <div class="related-alerts">
+        <h3 class="related-title">관련 알림</h3>
+        <div class="related-list" id="relatedList">
+            <!-- 관련 알림이 여기에 동적으로 로드됩니다 -->
+        </div>
+    </div>
+</div>
+
+<script>
+    const alertId = {{ alert.id }};
+    const alertCategory = '{{ alert.category }}';
+
+    // 페이지 로드 시 관련 알림 불러오기
+    document.addEventListener('DOMContentLoaded', function() {
+        loadRelatedAlerts();
+    });
+
+    // 관련 알림 불러오기
+    async function loadRelatedAlerts() {
+        try {
+            const response = await fetch(`/api/board/public-data/?category=${alertCategory}&exclude=${alertId}&limit=5`);
+            const data = await response.json();
+            
+            if (data.success && data.data.public_data.length > 0) {
+                displayRelatedAlerts(data.data.public_data);
+            } else {
+                displayNoRelatedAlerts();
+            }
+        } catch (error) {
+            console.error('관련 알림 로드 오류:', error);
+            displayNoRelatedAlerts();
+        }
+    }
+
+    // 관련 알림 표시
+    function displayRelatedAlerts(alerts) {
+        const container = document.getElementById('relatedList');
+        
+        const alertsHTML = alerts.map(alert => `
+            <div class="related-item" onclick="viewAlert(${alert.id})">
+                <div class="related-item-title">${alert.title}</div>
+                <div class="related-item-meta">
+                    <span>${alert.sender}</span>
+                    <span>${formatDate(alert.sent_at)}</span>
+                </div>
+            </div>
+        `).join('');
+        
+        container.innerHTML = alertsHTML;
+    }
+
+    // 관련 알림 없음 표시
+    function displayNoRelatedAlerts() {
+        const container = document.getElementById('relatedList');
+        container.innerHTML = `
+            <div class="no-related">
+                <div>현재 관련 알림이 없습니다.</div>
+            </div>
+        `;
+    }
+
+    // 알림 공유
+    function shareAlert() {
+        const title = '{{ alert.title }}';
+        const url = window.location.href;
+        
+        if (navigator.share) {
+            navigator.share({
+                title: title,
+                url: url
+            });
+        } else {
+            // 클립보드에 복사
+            navigator.clipboard.writeText(url).then(() => {
+                alert('링크가 클립보드에 복사되었습니다.');
+            });
+        }
+    }
+
+    // 뒤로가기
+    function goBack() {
+        window.history.back();
+    }
+
+    // 카테고리 구독
+    function subscribeCategory() {
+        const category = '{{ alert.category }}';
+        const categoryName = '{{ alert.get_category_display }}';
+        
+        if (confirm(`${categoryName} 카테고리를 구독하시겠습니까?\n새로운 알림이 등록되면 알려드리겠습니다.`)) {
+            // API 호출 (실제 구현 시)
+            console.log('카테고리 구독:', category);
+            alert('카테고리가 구독되었습니다.');
+        }
+    }
+
+    // 알림 상세보기
+    function viewAlert(alertId) {
+        window.location.href = `/board/public-data/${alertId}/`;
+    }
+
+    // 날짜 포맷팅
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diff = now - date;
+        
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+        
+        if (minutes < 60) {
+            return `${minutes}분 전`;
+        } else if (hours < 24) {
+            return `${hours}시간 전`;
+        } else if (days < 7) {
+            return `${days}일 전`;
+        } else {
+            return date.toLocaleDateString('ko-KR');
+        }
+    }
+</script>
+{% endblock %}

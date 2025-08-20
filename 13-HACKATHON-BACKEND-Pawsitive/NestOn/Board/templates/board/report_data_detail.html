@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제보 데이터 상세 - NestOn</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* 헤더 */
+        .header {
+            background-color: #ffffff;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e9ecef;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .hamburger-menu {
+            font-size: 24px;
+            cursor: pointer;
+            color: #333;
+            transition: color 0.3s;
+        }
+
+        .hamburger-menu:hover {
+            color: #007bff;
+        }
+
+        .app-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .app-icon {
+            width: 24px;
+            height: 24px;
+            position: relative;
+        }
+
+        .app-icon .nest {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 18px;
+            height: 10px;
+            background: linear-gradient(135deg, #a8e6cf 0%, #8fd3b6 100%);
+            border-radius: 50% 50% 0 0;
+            border: 1px solid #7fb8a0;
+        }
+
+        .app-icon .nest::before {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 15px;
+            height: 2px;
+            background: #7fb8a0;
+            border-radius: 0 0 7px 7px;
+        }
+
+        .app-icon .bird {
+            position: absolute;
+            top: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 9px;
+            height: 7px;
+            background: linear-gradient(135deg, #f4d03f 0%, #f39c12 100%);
+            border-radius: 50% 50% 50% 50%;
+            border: 1px solid #e67e22;
+        }
+
+        .app-icon .bird::before {
+            content: '';
+            position: absolute;
+            top: 1px;
+            left: 2px;
+            width: 1px;
+            height: 1px;
+            background: #2c3e50;
+            border-radius: 50%;
+        }
+
+        .app-icon .bird::after {
+            content: '';
+            position: absolute;
+            top: 1px;
+            right: 2px;
+            width: 1px;
+            height: 1px;
+            background: #2c3e50;
+            border-radius: 50%;
+        }
+
+        .app-icon .beak {
+            position: absolute;
+            top: 3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 2px solid #e67e22;
+            border-top: 1px solid transparent;
+            border-bottom: 1px solid transparent;
+        }
+
+        .notification-icon {
+            font-size: 20px;
+            cursor: pointer;
+            color: #333;
+            transition: color 0.3s;
+        }
+
+        .notification-icon:hover {
+            color: #007bff;
+        }
+
+        /* 네비게이션 */
+        .navigation {
+            background-color: #ffffff;
+            padding: 10px 20px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .nav-path {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link {
+            color: #007bff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .nav-separator {
+            color: #ccc;
+        }
+
+        /* 메인 콘텐츠 */
+        .main-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .post-header {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .post-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background-color: #f8f9fa;
+            color: #007bff;
+        }
+
+        .post-meta {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .post-image {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 16px;
+        }
+
+        .post-content {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .post-footer-actions {
+            display: flex;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        /* 댓글 섹션 */
+        .comments-section {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .comments-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .comment-form {
+            margin-bottom: 30px;
+        }
+
+        .comment-input {
+            width: 100%;
+            min-height: 80px;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+
+        .comment-input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .comment-form-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .anonymous-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .comment-submit-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .comment-submit-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .comment-submit-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .comments-list {
+            margin-top: 20px;
+        }
+
+        .comment-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .comment-item:last-child {
+            border-bottom: none;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .comment-date {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .comment-content {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* 신고 모달 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .report-reasons {
+            margin-bottom: 20px;
+        }
+
+        .reason-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .reason-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .reason-item.selected {
+            background-color: #e3f2fd;
+            border-color: #007bff;
+        }
+
+        .reason-radio {
+            margin: 0;
+        }
+
+        .reason-text {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .report-description {
+            margin-bottom: 20px;
+        }
+
+        .report-description label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .report-description textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        .report-description textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 15px;
+            }
+            
+            .post-title {
+                font-size: 20px;
+            }
+            
+            .post-actions {
+                flex-wrap: wrap;
+            }
+            
+            .modal-content {
+                margin: 10% auto;
+                width: 95%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <div class="header">
+        <div class="hamburger-menu" onclick="toggleSidebar()">☰</div>
+        <div class="app-title" onclick="navigateToHome()">
+            <div class="app-icon">
+                <div class="nest"></div>
+                <div class="bird">
+                    <div class="beak"></div>
+                </div>
+            </div>
+            NestOn
+        </div>
+        <div class="notification-icon">🔔</div>
+    </div>
+
+    <!-- 네비게이션 -->
+    <div class="navigation">
+        <div class="nav-path">
+            <span class="nav-link" onclick="navigateTo('/board/report-data/')">제보 데이터</span>
+            <span class="nav-separator">></span>
+            <span class="nav-link" onclick="navigateToCategory()">{{ news.category_display }}</span>
+        </div>
+    </div>
+
+    <!-- 메인 콘텐츠 -->
+    <div class="main-content">
+        <!-- 게시글 헤더 -->
+        <div class="post-header">
+            <h1 class="post-title">{{ news.title }}</h1>
+            <div class="post-actions">
+                <button class="action-btn" onclick="likePost()">공감</button>
+                <button class="action-btn" onclick="scrapPost()">스크랩</button>
+            </div>
+            <div class="post-meta">
+                {{ news.author_display_name }} · {{ news.created_at|date:"Y.m.d A g시 i분" }} 등록
+            </div>
+            
+            {% if news.image %}
+            <img src="{{ news.image.url }}" alt="제보 이미지" class="post-image">
+            {% else %}
+            <div class="post-image">이미지 없음</div>
+            {% endif %}
+            
+            <div class="post-content">
+                {{ news.content|linebreaks }}
+            </div>
+            
+            <div class="post-footer-actions">
+                <button class="action-btn" onclick="sharePost()">공유하기</button>
+                <button class="action-btn" onclick="openReportModal()">신고하기</button>
+            </div>
+        </div>
+
+        <!-- 댓글 섹션 -->
+        <div class="comments-section">
+            <h3 class="comments-header">댓글</h3>
+            
+            <!-- 댓글 작성 폼 -->
+            <div class="comment-form">
+                <textarea 
+                    id="commentInput" 
+                    class="comment-input" 
+                    placeholder="댓글을 입력하세요..."
+                    maxlength="500"
+                ></textarea>
+                <div class="comment-form-footer">
+                    <label class="anonymous-checkbox">
+                        <input type="checkbox" id="anonymousCheck" checked>
+                        익명으로 작성
+                    </label>
+                    <button class="comment-submit-btn" onclick="submitComment()">댓글 작성</button>
+                </div>
+            </div>
+
+            <!-- 댓글 목록 -->
+            <div class="comments-list" id="commentsList">
+                <!-- 댓글이 여기에 동적으로 로드됩니다 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 신고 모달 -->
+    <div id="reportModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">제보 신고하기</h3>
+                <span class="close" onclick="closeReportModal()">&times;</span>
+            </div>
+            
+            <div class="report-reasons">
+                <h4>신고 사유를 선택해주세요</h4>
+                <div class="reason-item" onclick="selectReason('허위 내용의 글')">
+                    <input type="radio" name="reason" value="허위 내용의 글" class="reason-radio">
+                    <span class="reason-text">허위 내용의 글</span>
+                </div>
+                <div class="reason-item" onclick="selectReason('홍보 위주의 글')">
+                    <input type="radio" name="reason" value="홍보 위주의 글" class="reason-radio">
+                    <span class="reason-text">홍보 위주의 글</span>
+                </div>
+                <div class="reason-item" onclick="selectReason('선정적인 내용')">
+                    <input type="radio" name="reason" value="선정적인 내용" class="reason-radio">
+                    <span class="reason-text">선정적인 내용</span>
+                </div>
+                <div class="reason-item" onclick="selectReason('특정 집단 차별')">
+                    <input type="radio" name="reason" value="특정 집단 차별" class="reason-radio">
+                    <span class="reason-text">특정 집단 차별</span>
+                </div>
+                <div class="reason-item" onclick="selectReason('기타')">
+                    <input type="radio" name="reason" value="기타" class="reason-radio">
+                    <span class="reason-text">기타</span>
+                </div>
+            </div>
+            
+            <div class="report-description">
+                <label for="reportDescription">상세 설명 (선택사항)</label>
+                <textarea 
+                    id="reportDescription" 
+                    placeholder="신고 사유에 대한 추가 설명을 입력해주세요..."
+                    maxlength="1000"
+                ></textarea>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeReportModal()">취소</button>
+                <button class="btn btn-danger" onclick="submitReport()">신고하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const newsId = {{ news.id }};
+        let selectedReason = '';
+
+        // 페이지 로드 시 댓글 로드
+        document.addEventListener('DOMContentLoaded', function() {
+            loadComments();
+        });
+
+        // 댓글 로드
+        async function loadComments() {
+            try {
+                const response = await fetch(`/api/board/report-data/${newsId}/comments/`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayComments(data.data);
+                } else {
+                    console.error('댓글 로드 실패:', data.message);
+                }
+            } catch (error) {
+                console.error('댓글 로드 오류:', error);
+            }
+        }
+
+        // 댓글 표시
+        function displayComments(comments) {
+            const commentsList = document.getElementById('commentsList');
+            
+            if (comments.length === 0) {
+                commentsList.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">아직 댓글이 없습니다.</p>';
+                return;
+            }
+            
+            commentsList.innerHTML = comments.map(comment => `
+                <div class="comment-item">
+                    <div class="comment-header">
+                        <span class="comment-author">${comment.author_display_name}</span>
+                        <span class="comment-date">${formatDate(comment.created_at)}</span>
+                    </div>
+                    <div class="comment-content">${comment.content}</div>
+                </div>
+            `).join('');
+        }
+
+        // 댓글 작성
+        async function submitComment() {
+            const content = document.getElementById('commentInput').value.trim();
+            const isAnonymous = document.getElementById('anonymousCheck').checked;
+            
+            if (!content) {
+                alert('댓글 내용을 입력해주세요.');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/board/report-data/${newsId}/comments/create/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        content: content,
+                        is_anonymous: isAnonymous
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('commentInput').value = '';
+                    loadComments(); // 댓글 목록 새로고침
+                    alert('댓글이 작성되었습니다.');
+                } else {
+                    alert('댓글 작성에 실패했습니다: ' + data.message);
+                }
+            } catch (error) {
+                console.error('댓글 작성 오류:', error);
+                alert('댓글 작성 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 신고 모달 열기
+        function openReportModal() {
+            document.getElementById('reportModal').style.display = 'block';
+        }
+
+        // 신고 모달 닫기
+        function closeReportModal() {
+            document.getElementById('reportModal').style.display = 'none';
+            selectedReason = '';
+            document.getElementById('reportDescription').value = '';
+            // 라디오 버튼 선택 해제
+            document.querySelectorAll('input[name="reason"]').forEach(radio => {
+                radio.checked = false;
+            });
+            // 선택된 아이템 스타일 제거
+            document.querySelectorAll('.reason-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+        }
+
+        // 신고 사유 선택
+        function selectReason(reason) {
+            selectedReason = reason;
+            
+            // 라디오 버튼 선택
+            document.querySelector(`input[value="${reason}"]`).checked = true;
+            
+            // 선택된 아이템 스타일 적용
+            document.querySelectorAll('.reason-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+        }
+
+        // 신고 제출
+        async function submitReport() {
+            if (!selectedReason) {
+                alert('신고 사유를 선택해주세요.');
+                return;
+            }
+            
+            const description = document.getElementById('reportDescription').value.trim();
+            
+            try {
+                const response = await fetch(`/api/board/report-data/${newsId}/report/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        reason: selectedReason,
+                        description: description
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    closeReportModal();
+                    alert('신고가 성공적으로 접수되었습니다.');
+                } else {
+                    alert('신고 접수에 실패했습니다: ' + data.message);
+                }
+            } catch (error) {
+                console.error('신고 접수 오류:', error);
+                alert('신고 접수 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 유틸리티 함수들
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function navigateToHome() {
+            window.location.href = '/';
+        }
+
+        function navigateTo(url) {
+            window.location.href = url;
+        }
+
+        function navigateToCategory() {
+            window.location.href = `/board/report-data/category/${getCategorySlug()}/`;
+        }
+
+        function getCategorySlug() {
+            // 카테고리 슬러그를 반환하는 함수
+            const categoryMap = {
+                'natural_disaster': 'natural_disaster',
+                'accident': 'accident',
+                'traffic': 'traffic',
+                'security': 'security',
+                'facility': 'facility',
+                'other': 'other'
+            };
+            return categoryMap['{{ news.category }}'] || 'other';
+        }
+
+        // 기타 액션 함수들 (실제 구현 필요)
+        function likePost() {
+            alert('공감 기능은 추후 구현 예정입니다.');
+        }
+
+        function scrapPost() {
+            alert('스크랩 기능은 추후 구현 예정입니다.');
+        }
+
+        function sharePost() {
+            alert('공유 기능은 추후 구현 예정입니다.');
+        }
+
+        function toggleSidebar() {
+            alert('사이드바 기능은 추후 구현 예정입니다.');
+        }
+
+        // 모달 외부 클릭 시 닫기
+        window.onclick = function(event) {
+            const modal = document.getElementById('reportModal');
+            if (event.target === modal) {
+                closeReportModal();
+            }
+        }
+    </script>
+</body>
+</html>
