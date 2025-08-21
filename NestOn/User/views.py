@@ -157,15 +157,27 @@ def login_view(request):
         user = serializer.validated_data
         refresh = RefreshToken.for_user(user)
         
-        return Response({
+        response_data = {
             "status": 200,
             "success": True,
             "message": "로그인에 성공했습니다.",
             "data": {
-                "refresh": str(refresh),
                 "access": str(refresh.access_token),
             }
-        }, status=status.HTTP_200_OK)
+        }
+        
+        response = Response(response_data, status=status.HTTP_200_OK)
+        
+        # 2. 리프레시 토큰은 쿠키에 담아서 설정
+        response.set_cookie(
+            key='refresh_token', 
+            value=str(refresh), 
+            httponly=True,        # Javascript에서 쿠키 접근 불가 (보안 강화)
+            samesite='Lax',       # CSRF 공격 방어
+            secure=True,        # HTTPS 환경에서만 쿠키 전송 (배포 시 활성화)
+        )
+        
+        return response
 
     except serializers.ValidationError:
         # --- 실패 로직 ---
