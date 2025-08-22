@@ -211,7 +211,7 @@ def call_openai_api(prompt, model="gpt-3.5-turbo"):
         print(f"OpenAI API 호출 오류: {e}")
         return None
 
-    def get_bot_response(user_message):
+def get_bot_response(user_message):
     """사용자 메시지에 대한 봇 응답을 생성합니다."""
     
     # 1단계: OpenAI API 사용 (주력)
