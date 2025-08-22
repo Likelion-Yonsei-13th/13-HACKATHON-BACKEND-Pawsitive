@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'User',
     'board',
     'public_data',
+    'local_events',
 ]
 
 MIDDLEWARE = [
