@@ -40,6 +40,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'User',
+    'board',
+    'public_data',
+    'local_events',
 ]
 
 MIDDLEWARE = [
