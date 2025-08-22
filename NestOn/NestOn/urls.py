@@ -15,11 +15,17 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import HttpResponse
+
+def home(request):
+    return HttpResponse("NestOn 서버가 정상적으로 배포되었습니다!")
 
 urlpatterns = [
+    path('', home, name='home'),	
     path('admin/', admin.site.urls),
     path('api/user/', include('User.urls')),
     path('api/board/', include('board.urls')),
+    path('api/chatbot/', include('chatbot.urls')),
     path('api/public-data/', include('public_data.urls')),
     path('api/local-events/', include('local_events.urls')),
 ]
