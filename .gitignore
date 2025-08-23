@@ -1,3 +1,5 @@
-# OS generated files
+# .gitignore
+myvenv/
 .DS_Store
-Thumbs.db
+db.sqlite3
+__pycache__/
