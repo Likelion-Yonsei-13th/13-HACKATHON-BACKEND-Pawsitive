@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ic4*6x2-+vjm_ot&4z9@b)ds(3y2e(bz594bxr8+g1t1k#p__1'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['43.203.243.196', 'localhost', '127.0.0.1', 'neston.ai.kr']
 
 
 # Application definition
