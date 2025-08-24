@@ -133,13 +133,13 @@ api_view(['GET'])
 @permission_classes([AllowAny])
 def hot_posts_view(request):
     try:
-        # ✅ URL의 쿼리 파라미터에서 'category' 값을 가져옵니다.
+        # URL의 쿼리 파라미터에서 'category' 값을 가져옵니다.
         category = request.query_params.get('category')
 
         # 기본 쿼리셋: 활성화된 글, 좋아요 30개 이상
         posts = Post.objects.filter(is_active=True).annotate(like_count=Count('likes')).filter(like_count__gte=30)
         
-        # ✅ category 값이 있다면, 해당 카테고리로 추가 필터링
+        # category 값이 있다면, 해당 카테고리로 추가 필터링
         if category:
             posts = posts.filter(category=category)
             
