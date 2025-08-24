@@ -28,6 +28,9 @@ class UserSignupSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"agreements": "이용약관(필수)에 동의해야 합니다."})
         if not data.get('privacy_agreed'):
             raise serializers.ValidationError({"agreements": "개인정보 취급방침(필수)에 동의해야 합니다."})
+        if not data.get('marketing_push_agreed'):
+            raise serializers.ValidationError({"agreements": "커뮤니티 운영 및 게시물 관리 정책(필수)에 동의해야 합니다."})
+        
         return data
 
     def create(self, validated_data):
