@@ -9,6 +9,9 @@ class PublicAlert(models.Model):
         ('facility', '시설고장'),
         ('etc', '기타'),
     ]
+     # API의 SN(일련번호)를 저장할 필드 추가
+    unique_id = models.CharField(max_length=50, unique=True, null=True, blank=True)
+
     title = models.CharField(max_length=255)
     content = models.TextField()
     category = models.CharField(max_length=20, choices=ALERT_CATEGORIES)
