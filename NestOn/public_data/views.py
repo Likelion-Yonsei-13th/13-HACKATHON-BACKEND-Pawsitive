@@ -1,38 +1,142 @@
+import requests
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from django.db.models import Q  
+from django.db.models import Q
+from .models import PublicAlert, GuardianHouse, CulturalFacility
+from .serializers import PublicAlertSerializer, CulturalFacilitySerializer
 
-from .models import PublicAlert
-from .serializers import PublicAlertSerializer
-import requests
-from datetime import datetime
-from django.core.management.base import BaseCommand
+#  카테고리별 '전문가' 함수들 
+def _fetch_disaster_data(locations):
+    """ '자연재해' 데이터를 처리하는 전문가 함수 (현재는 DB 조회) """
+    # 향후 실시간 재난 API로 교체될 수 있는 부분입니다.
+    # 현재는 DB에 저장된 재난문자를 조회합니다.
+    if not locations:
+        return []
 
-# --- 테스트용 가짜 데이터 ---
-MOCK_DATA = {
-    "disaster": [
-        {"id": 1, "title": "[기상청] 서울 전역 호우주의보 발령", "content": "22일 오후 2시를 기해 서울 전역에 호우주의보가 발령되었습니다...", "category": "disaster", "published_at": "2025-08-22T14:05:00Z", "location_name": "서대문구", "source": "기상청"},
-    ],
-    "accident": [
-        {"id": 2, "title": "[강남소방서] 삼성역 인근 도로 3중 추돌사고 발생", "content": "삼성역 사거리에서 3중 추돌사고가 발생하여 주변 도로가 혼잡합니다...", "category": "accident", "published_at": "2025-08-22T14:15:00Z", "location_name": "강남구", "source": "강남소방서"},
-    ],
-    "traffic": [
-        {"id": 3, "title": "[교통정보] 올림픽대로 잠실 방향 정체", "content": "올림픽대로 잠실 방향, 한남대교 남단부터 차량 정체가 이어지고 있습니다...", "category": "traffic", "published_at": "2025-08-22T14:25:00Z", "location_name": "서대문구", "source": "서울교통정보센터"},
-    ],
-    "safety": [
-        {"id": 4, "title": "[경찰청] 보이스피싱 주의 안내", "content": "최근 검찰, 경찰을 사칭한 보이스피싱 사례가 증가하고 있습니다...", "category": "safety", "published_at": "2025-08-22T10:10:00Z", "location_name": "서대문구", "source": "경찰청"},
-    ],
-    "facility": [
-        {"id": 5, "ti-tle": "[마포구청] 상수도관 파열로 인한 단수 안내", "content": "성산동 일대 상수도관 파열로 복구 작업 중이며, 일부 지역에 단수가 예상됩니다.", "category": "facility", "published_at": "2025-08-22T14:00:00Z", "location_name": "마포구", "source": "마포구청"},
-    ],
-    "etc": [
-        {"id": 6, "title": "[서울시] '책읽는 서울광장' 주말 행사 안내", "content": "이번 주말, 서울광장에서 다채로운 북콘서트와 문화행사가 열립니다...", "category": "etc", "published_at": "2025-08-22T11:00:00Z", "location_name": "중구", "source": "서울시"},
-    ]
-}
+    query = Q()
+    for loc in locations:
+        query |= Q(location_name__icontains=loc.level2_district)
+    
+    alerts = PublicAlert.objects.filter(category='disaster').filter(query)
+    serializer = PublicAlertSerializer(alerts, many=True)
+    return serializer.data
 
-# API 1: 카테고리 선택 화면을 위한 API
+def _fetch_traffic_accident_data(locations, category):
+    """ '교통' 및 '사고' 데이터를 처리하는 전문가 함수 """
+    API_URL = "https://openapi.its.go.kr:9443/eventInfo"
+    api_key = "ea6b45061ab2443fa58abd4c7dad5fed"
+    all_raw_results = []
+
+    for location in locations:
+        if not (location and location.latitude and location.longitude): continue
+        
+        center_x, center_y = location.longitude, location.latitude
+        coord_range = 0.1
+        params = {
+            "apiKey": api_key, "getType": "json",
+            "minX": center_x - coord_range, "maxX": center_x + coord_range,
+            "minY": center_y - coord_range, "maxY": center_y + coord_range,
+            "type": "all", "eventType": "all",
+        }
+        try:
+            response = requests.get(API_URL, params=params)
+            items = response.json().get('body', {}).get('items', [])
+            all_raw_results.extend(items)
+        except requests.exceptions.RequestException:
+            continue
+    
+    if category == 'accident':
+        allowed_event_types = ['교통사고', '재난']
+        all_raw_results = [item for item in all_raw_results if item.get('eventType') in allowed_event_types]
+
+    # 표준 형식으로 변환
+    standardized_results = []
+    for item in all_raw_results:
+        standardized_item = {
+            "id": item.get("linkId"), "unique_id": item.get("linkId"),
+            "title": f"[{item.get('eventType')}] {item.get('roadName', '위치 정보 없음')}",
+            "content": item.get("message"), "category": category,
+            "published_at": item.get("startDate"), "location_name": item.get("roadName"),
+            "source": "도로교통공사"
+        }
+        standardized_results.append(standardized_item)
+    
+    return standardized_results
+
+def _fetch_safety_data(locations):
+    #'치안' 데이터를 DB에서 조회하고 사용자의 자치구로 필터링하는 함수
+    if not locations:
+        return []
+
+    # 사용자의 '내 지역' 및 '관심 지역'의 자치구 이름 목록을 추출합니다.
+    # 예: ['강남구', '종로구']
+    gu_names = {loc.level2_district for loc in locations if loc.level2_district.endswith('구')}
+
+    if not gu_names:
+        return []
+
+    # 해당 자치구에 속하는 안심지킴이집을 DB에서 조회합니다.
+    nearby_houses = GuardianHouse.objects.filter(gu_name__in=list(gu_names))
+    
+    # 표준 형식으로 변환
+    standardized_results = []
+    for item in nearby_houses:
+        standardized_item = {
+            "id": item.id,
+            "unique_id": item.id,
+            "title": f"[{item.brand_name}] {item.store_name}",
+            "content": item.address,
+            "category": "safety",
+            "published_at": None,
+            "location_name": f"{item.gu_name} {item.store_name}",
+            "source": "서울시 여성안심지킴이집"
+        }
+        standardized_results.append(standardized_item)
+        
+    return standardized_results
+    
+    # 표준 형식으로 변환
+    standardized_results = []
+    for item in nearby_facilities:
+        standardized_item = {
+            "id": item.id,
+            "unique_id": item.id,
+            "title": f"[{item.facility_type}] {item.name}",
+            "content": f"주소: {item.address}, 전화번호: {item.tel}",
+            "category": "safety",
+            "published_at": None,
+            "location_name": item.name,
+            "source": item.police_office
+        }
+        standardized_results.append(standardized_item)
+        
+    return standardized_results
+
+def _fetch_facility_data(locations):
+    #'시설' 데이터를 DB에서 조회하고 새 Serializer로 변환하는 함수
+    if not locations:
+        return []
+
+    location_keywords = {f"{loc.level1_city} {loc.level2_district}" for loc in locations}
+    query = Q()
+    for keyword in location_keywords:
+        query |= Q(address__icontains=keyword)
+
+    nearby_facilities = CulturalFacility.objects.filter(query)
+    
+    # 수동으로 데이터를 만드는 대신, 새로 만든 Serializer를 사용합니다.
+    serializer = CulturalFacilitySerializer(nearby_facilities, many=True)
+    return serializer.data
+
+
+def _fetch_etc_data(locations):
+    """ (미래) '기타' 데이터를 처리할 전문가 함수 """
+    # TODO: 여기에 '기타' 관련 API 연동 코드 구현
+    return []
+
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def category_list_view(request):
@@ -40,50 +144,40 @@ def category_list_view(request):
     formatted_categories = [{'key': key, 'name': name} for key, name in categories]
     return Response(formatted_categories)
 
-# API 2: 상세 목록 화면을 위한 API
 @api_view(['GET'])
-@permission_classes([IsAuthenticated]) # 로그인 필수
+@permission_classes([IsAuthenticated])
 def alert_list_view(request):
+    """ 요청을 받고 적절한 전문가에게 넘겨주는 '교통 경찰' 함수 """
     category = request.query_params.get('category')
-    location_type = request.query_params.get('location_type') # 'my_location' 또는 'interested'
+    location_type = request.query_params.get('location_type')
 
     if not all([category, location_type]):
         return Response({"error": "category와 location_type 파라미터가 모두 필요합니다."}, status=status.HTTP_400_BAD_REQUEST)
-
     if location_type not in ['my_location', 'interested']:
-        return Response({"error": "location_type은 'my_location' 또는 'interested' 여야 합니다."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "지역을 먼저 설정해주세요."}, status=status.HTTP_400_BAD_REQUEST)
 
-    # all_data_for_category = MOCK_DATA.get(category, [])
-    # DB에서 해당 카테고리의 모든 데이터를 조회합니다.
-    alerts = PublicAlert.objects.filter(category=category)
-
+    # 1. 공통 로직: 사용자의 '내 지역' 또는 '관심 지역' 목록 준비
+    locations_to_check = []
     if location_type == 'my_location':
-        user_location = request.user.my_location
-        if not user_location:
-            return Response({"error": "'내 지역'을 먼저 설정해주세요."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # '내 지역' 이름(예: '강남구')이 포함된 데이터만 필터링
-        #filtered_data = [alert for alert in all_data_for_category if user_location.level2_district in alert['location_name']]
-        # Python 리스트 필터링 대신, Django ORM의 filter를 사용하여 DB에서 직접 필터링합니다.
-        location_name = user_location.level2_district
-        alerts = alerts.filter(location_name__icontains=location_name)
-
+        if request.user.my_location:
+            locations_to_check.append(request.user.my_location)
     elif location_type == 'interested':
-        user_locations = request.user.interested_locations.all()
-        if not user_locations.exists():
-            return Response([]) # 관심 지역이 없으면 빈 목록 반환
+        locations_to_check.extend(request.user.interested_locations.all())
 
-        # location_names = [loc.level2_district for loc in user_locations]
-        # '관심 지역' 이름 중 하나라도 포함된 데이터만 필터링
-        # filtered_data = [alert for alert in all_data_for_category if any(name in alert['location_name'] for name in location_names)]
-         # [변경 3] 여러 관심 지역을 OR 조건으로 필터링하기 위해 Q 객체를 사용합니다.
-        query = Q()
-        for loc in user_locations:
-            location_name = loc.level2_district
-            query |= Q(location_name__icontains=location_name)
-        alerts = alerts.filter(query)
-    
-    sorted_alerts = alerts.order_by('-published_at')
-    serializer = PublicAlertSerializer(sorted_alerts, many=True)
-    
-    return Response(serializer.data)
+    if not locations_to_check:
+        return Response([])
+
+    # 2. Router: 카테고리에 맞는 전문가 함수 호출
+    results = []
+    if category == 'traffic' or category == 'accident':
+        results = _fetch_traffic_accident_data(locations_to_check, category)
+    elif category == 'disaster':
+        results = _fetch_disaster_data(locations_to_check)
+    elif category == 'safety':
+        results = _fetch_safety_data(locations_to_check)
+    elif category == 'facility':
+        results = _fetch_facility_data(locations_to_check)
+    elif category == 'etc':
+        results = _fetch_etc_data(locations_to_check)
+
+    return Response(results)

@@ -7,6 +7,8 @@ class Location(models.Model):
     level1_city = models.CharField(max_length=100)      # 시/도 (예: 경기도)
     level2_district = models.CharField(max_length=100) # 시/군/구 (예: 성남시, 강남구)
     level3_borough = models.CharField(max_length=100, null=True, blank=True) # 일반구 (예: 분당구), 없으면 NULL
+    latitude = models.FloatField(null=True, blank=True)  # 위도
+    longitude = models.FloatField(null=True, blank=True) # 경도
 
     def __str__(self):
         if self.level3_borough:
