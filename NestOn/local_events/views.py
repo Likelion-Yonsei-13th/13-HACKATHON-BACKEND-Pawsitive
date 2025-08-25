@@ -5,6 +5,8 @@ from rest_framework import status
 from operator import itemgetter
 import re # 키워드 추출을 위한 re 모듈 import
 from User.models import Category # User 앱의 Category 모델을 가져옵니다.
+from .models import LocalEvent # LocalEvent 모델 import
+from .serializers import LocalEventSerializer, LocalEventDetailSerializer
 
 # --- 테스트를 위한 실제와 유사한 임시 데이터 ---
 MOCK_EVENTS = [
@@ -41,58 +43,70 @@ def event_category_list_view(request):
 def event_list_view(request):
     user = request.user
     location_type = request.query_params.get('location_type')
-
     if not location_type or location_type not in ['my_location', 'interested']:
-        return Response({"error": "location_type 파라미터(my_location 또는 interested)가 필요합니다."}, status=400)
+        return Response({"error": "location_type 파라미터가 필요합니다."}, status=400)
 
-    # 1. 지역 필터링 (기존과 동일)
+    # 1. 지역 필터링: DB에서 사용자의 지역에 맞는 행사 조회
     if location_type == 'my_location':
         if not user.my_location:
             return Response({"error": "'내 지역'을 먼저 설정해주세요."}, status=400)
         location_names = [user.my_location.level2_district]
     else: # 'interested'
         user_locations = user.interested_locations.all()
-        if not user_locations.exists():
-            return Response([])
+        if not user_locations.exists(): return Response([])
         location_names = [loc.level2_district for loc in user_locations]
-
-    events = [event for event in MOCK_EVENTS if event['location_name'] in location_names]
     
-    # 2. 카테고리 필터링 (기존과 동일)
+    events_qs = LocalEvent.objects.filter(location_name__in=location_names)
+
+    # 2. 카테고리 필터링
     category_name = request.query_params.get('category')
     if category_name:
-        events = [event for event in events if event['category'] == category_name]
+        events_qs = events_qs.filter(category__name=category_name)
         
     # 3. 정렬 방식 결정
     sort_by = request.query_params.get('sort')
     if sort_by == 'recommendation':
-
         user_interests = user.interests.all()
-        # 3-1. 사용자가 선택한 관심사의 '상위 카테고리' 목록을 미리 준비
         user_parent_category_names = {interest.parent_category.name for interest in user_interests}
-        # 3-2. 사용자가 선택한 관심사의 '하위 카테고리' 이름에서 키워드 추출
-        # 예: "지역공연(연극, 뮤지컬)" -> ["지역공연", "연극", "뮤지컬"]
         user_interest_keywords = set()
         for interest in user_interests:
-            # 괄호와 콤마를 기준으로 단어들을 분리
             keywords = re.split(r'[,\s()]+', interest.name)
             user_interest_keywords.update([kw for kw in keywords if kw])
 
-        for event in events:
+        # 추천 점수 계산을 위해 QuerySet을 리스트로 변환
+        events_list = list(events_qs)
+        for event in events_list:
             bonus_score = 0
-            # 3-3. 1차 가산점: 상위 카테고리가 일치하면 +100점
-            if event['category'] in user_parent_category_names:
+            if event.category and event.category.name in user_parent_category_names:
                 bonus_score += 100
-            
-            # 3-4. 2차 가산점: 행사 제목에 하위 카테고리 키워드가 있으면 +50점
-            if any(keyword in event['title'] for keyword in user_interest_keywords):
+            if any(keyword in event.title for keyword in user_interest_keywords):
                 bonus_score += 50
             
-            event['final_score'] = event.get('recommendation_score', 0) + bonus_score
-
-        events.sort(key=itemgetter('final_score', 'recommendation_score'), reverse=True)
-    else:
-        # 기본은 최신순(시작 날짜 기준) 정렬
-        events.sort(key=itemgetter('start_date'), reverse=True)
+            event.final_score = event.recommendation_score + bonus_score
         
-    return Response(events)
+        events_list.sort(key=lambda x: (x.final_score, x.recommendation_score), reverse=True)
+        # 정렬된 리스트를 다시 직렬화
+        serializer = LocalEventSerializer(events_list, many=True)
+        return Response(serializer.data)
+
+    else: # 기본은 최신순 정렬
+        events_qs = events_qs.order_by('-start_date')
+        serializer = LocalEventSerializer(events_qs, many=True)
+        return Response(serializer.data)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def event_detail_view(request, pk):
+    """
+    행사 하나에 대한 모든 상세 정보를 조회하는 API입니다.
+    """
+    try:
+        # URL에서 받은 pk(id)를 사용해 DB에서 해당 이벤트를 찾습니다.
+        event = LocalEvent.objects.get(pk=pk)
+    except LocalEvent.DoesNotExist:
+        # 해당 id의 이벤트가 없으면 404 Not Found 에러를 반환합니다.
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    # 새로 만든 상세 정보용 Serializer를 사용합니다.
+    serializer = LocalEventDetailSerializer(event)
+    return Response(serializer.data)
