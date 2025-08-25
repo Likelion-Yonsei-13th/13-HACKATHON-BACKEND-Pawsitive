@@ -291,6 +291,7 @@ def borough_list_view(request):
     
 # 4. 지역 정보 검색 API (ID 선택을 위해) (응답 형식 수정)
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def location_search_view(request):
     city = request.query_params.get('city')
     district = request.query_params.get('district')
