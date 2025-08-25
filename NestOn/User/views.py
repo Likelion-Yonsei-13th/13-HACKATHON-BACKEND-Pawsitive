@@ -3,7 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework import status, serializers
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
@@ -12,7 +12,7 @@ import random
 # from .serializers import ... 처럼 상대경로를 사용하므로 앱 이름 변경과 무관
 from .serializers import UserSignupSerializer, UserLoginSerializer, CategorySerializer
 
-from rest_framework.permissions import IsAuthenticated # 인증된 사용자만 접근 허용
+# from rest_framework.permissions import IsAuthenticated # 인증된 사용자만 접근 허용
 from .models import Location, Category
 from .serializers import LocationSerializer, UserProfileSerializer
 from botocore.exceptions import ClientError
@@ -20,6 +20,34 @@ from botocore.exceptions import ClientError
 User = get_user_model()
 
 VERIFICATION_CODES = {} # 실제로는 Redis 사용 추천
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def test_token_view(request):
+    """토큰 인증 테스트용 뷰"""
+    return Response({
+        "status": 200,
+        "success": True,
+        "message": "토큰 인증이 성공했습니다!",
+        "data": {
+            "user_id": request.user.id,
+            "username": request.user.username,
+            "email": request.user.email
+        }
+    })
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def test_public_view(request):
+    """공개 접근 테스트용 뷰"""
+    return Response({
+        "status": 200,
+        "success": True,
+        "message": "공개 접근이 성공했습니다!",
+        "data": {
+            "message": "이 엔드포인트는 인증이 필요하지 않습니다."
+        }
+    })
 
 @api_view(['POST'])
 @permission_classes([AllowAny])

@@ -9,6 +9,8 @@ from .views import (
     location_search_view,
     profile_view,
     category_list_view,
+    test_token_view,
+    test_public_view,
 )
 
 urlpatterns = [
@@ -24,4 +26,8 @@ urlpatterns = [
     path('locations/search/', location_search_view, name='location-search'),
     path('profile/', profile_view, name='profile'),
     path('categories/', category_list_view, name='category-list'),
+    
+    # 토큰 테스트용 엔드포인트
+    path('test-token/', test_token_view, name='test-token'),
+    path('test-public/', test_public_view, name='test-public'),
 ]
