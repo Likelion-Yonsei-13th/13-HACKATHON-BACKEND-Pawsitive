@@ -66,6 +66,7 @@ class Command(BaseCommand):
                             lon_str = lon_str.split('~')[0]
                         if lon_str:
                             longitude = float(lon_str)
+
                     except (ValueError, TypeError):
                         # 변환 중 오류가 발생하면 None으로 처리하고 넘어감
                         self.stdout.write(self.style.WARNING(f"잘못된 좌표 데이터 발견: LAT='{lat_str}', LOT='{lon_str}'"))
@@ -82,8 +83,8 @@ class Command(BaseCommand):
                             'place': item.get('PLACE'),
                             'image_url': item.get('MAIN_IMG'),
                             'org_link': item.get('ORG_LINK'),
-                            'latitude': float(item['LAT']) if item.get('LAT') else None,
-                            'longitude': float(item['LOT']) if item.get('LOT') else None,
+                            'latitude': latitude,   # 정제된 값 사용
+                            'longitude': longitude, # 정제된 값 사용
                         }
                     )
                 total_saved_count += len(result_data)
