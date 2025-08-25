@@ -71,5 +71,5 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING(f'데이터 생성 실패 (ID: TEST-{i+1}): {e}'))
                 continue
 
-        self.stdout.write(self.style.SUCCESS(f'🎉 총 50개의 테스트 행사 데이터를 성공적으로 생성했습니다.'))
+        self.stdout.write(self.style.SUCCESS(f' 총 50개의 테스트 행사 데이터를 성공적으로 생성했습니다.'))
         
