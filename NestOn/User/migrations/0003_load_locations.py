@@ -1,5 +1,3 @@
-# User/migrations/0002_load_locations.py
-
 import csv
 from django.db import migrations
 from django.conf import settings
@@ -8,7 +6,7 @@ from django.conf import settings
 CSV_PATH = settings.BASE_DIR / 'data' / 'korea_locations_3level.csv'
 
 def load_data(apps, schema_editor):
-    Location = apps.get_model('User', 'Location') # 'user' -> 'User'로 수정
+    Location = apps.get_model('User', 'Location') 
     with open(CSV_PATH, newline='', encoding='utf-8') as csvfile:
         data_reader = csv.DictReader(csvfile)
         locations_to_create = []

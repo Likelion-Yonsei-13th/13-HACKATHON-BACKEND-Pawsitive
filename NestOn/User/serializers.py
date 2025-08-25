@@ -92,20 +92,30 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'username', 'name',
             'my_location', 'interested_locations',         # 읽기용 필드
-            'my_location_id', 'interested_location_ids'   # 쓰기용 필드
+            'my_location_id', 'interested_location_ids',
+            'interests', 'interest_ids'   # 쓰기용 필드
         ]
 
     def update(self, instance, validated_data):
+    # my_location 업데이트 로직 수정
         my_location_id = validated_data.get('my_location_id')
         if my_location_id is not None:
-            # allow_null=True를 처리하기 위해, id가 0이면 None으로 간주
-            instance.my_location_id = my_location_id if my_location_id else None
+            if my_location_id == 0: # ID가 0이면 지역 설정을 해제하는 것으로 간주
+                instance.my_location = None
+            else:
+                try:
+                    location = Location.objects.get(pk=my_location_id)
+                    instance.my_location = location
+                except Location.DoesNotExist:
+                    # ID에 해당하는 지역이 없을 경우 에러 처리 (선택사항)
+                    raise serializers.ValidationError({"my_location_id": "유효하지 않은 지역 ID입니다."})
 
+        # interested_locations 업데이트 로직 (기존 코드 유지)
         interested_location_ids = validated_data.get('interested_location_ids')
         if interested_location_ids is not None:
             instance.interested_locations.set(interested_location_ids)
 
-        # 관심사(하위 카테고리) 수정 로직 추가
+        # interests 업데이트 로직 (기존 코드 유지)
         interest_ids = validated_data.get('interest_ids')
         if interest_ids is not None:
             instance.interests.set(interest_ids)
