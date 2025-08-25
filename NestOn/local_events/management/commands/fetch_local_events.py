@@ -50,6 +50,26 @@ class Command(BaseCommand):
                     if not (start_dt and end_dt): continue
 
                     # 4. update_or_create로 중복 없이 데이터를 저장하거나 업데이트합니다.
+                    lat_str = item.get('LAT')
+                    lon_str = item.get('LOT')
+                    latitude = None
+                    longitude = None
+
+                    try:
+                        # '~' 문자가 포함된 경우, 그 앞부분만 사용
+                        if lat_str and '~' in lat_str:
+                            lat_str = lat_str.split('~')[0]
+                        if lat_str:
+                            latitude = float(lat_str)
+                        
+                        if lon_str and '~' in lon_str:
+                            lon_str = lon_str.split('~')[0]
+                        if lon_str:
+                            longitude = float(lon_str)
+                    except (ValueError, TypeError):
+                        # 변환 중 오류가 발생하면 None으로 처리하고 넘어감
+                        self.stdout.write(self.style.WARNING(f"잘못된 좌표 데이터 발견: LAT='{lat_str}', LOT='{lon_str}'"))
+                        pass
                     LocalEvent.objects.update_or_create(
                         api_id=item.get('NUM'),
                         defaults={
