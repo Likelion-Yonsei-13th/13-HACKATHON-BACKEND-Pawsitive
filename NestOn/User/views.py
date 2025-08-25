@@ -325,6 +325,7 @@ def category_list_view(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # 5. 사용자 프로필 조회 및 수정 API
+@csrf_exempt
 @api_view(['GET', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def profile_view(request):
