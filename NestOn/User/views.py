@@ -223,6 +223,7 @@ def login_view(request):
 
 # 1. 시/도 목록 API (응답 형식 수정)
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def city_list_view(request):
     try:
         cities = Location.objects.values_list('level1_city', flat=True).distinct()
@@ -242,6 +243,7 @@ def city_list_view(request):
 
 # 2. 시/군/구 목록 API (응답 형식 수정)
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def district_list_view(request):
     city = request.query_params.get('city')
     if not city:
@@ -262,6 +264,7 @@ def district_list_view(request):
 
 # 3. 일반구 목록 API (응답 형식 수정)
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def borough_list_view(request):
     city = request.query_params.get('city')
     district = request.query_params.get('district')

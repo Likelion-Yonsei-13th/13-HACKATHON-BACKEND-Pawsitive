@@ -2,6 +2,8 @@ myvenv/
 
 .DS_Store
 
+# Database
+*.sqlite3
 db.sqlite3
 
 __pycache__/
