@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import LocalEvent
+from .models import LocalEvent,CommercialArea
 
 class LocalEventSerializer(serializers.ModelSerializer):
     # Foreign Key로 연결된 Category 모델의 'name' 필드를 가져옵니다.
@@ -29,3 +29,15 @@ class LocalEventDetailSerializer(serializers.ModelSerializer):
         model = LocalEvent
         # '__all__'을 사용해 모델의 모든 필드를 포함시킵니다.
         fields = '__all__'
+
+class CommercialAreaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommercialArea
+        # 요청하신 5개 필드를 제외한 모든 필드를 포함합니다.
+        exclude = [
+            'area_sh_payment_amt_min',
+            'area_sh_payment_amt_max',
+            'rsb_sh_payment_amt_min',
+            'rsb_sh_payment_amt_max',
+            'cmrcl_corporation_rate'
+        ]
