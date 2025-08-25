@@ -1,8 +1,10 @@
+import os
+
 # Chatbot Configuration Example
 # 이 파일을 config.py로 복사하고 실제 API 키를 입력하세요
 
 # OpenAI API 설정
-OPENAI_API_KEY = "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"  # 실제 API 키로 교체하세요
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', "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")
 
 # 챗봇 설정
 CHATBOT_CONFIG = {
