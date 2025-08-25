@@ -329,6 +329,9 @@ def category_list_view(request):
 @api_view(['GET', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def profile_view(request):
+    print("====== PROFILE VIEW HEADERS ======")
+    print(request.headers)
+    print("================================")
     user = request.user
 
     if request.method == 'GET':
